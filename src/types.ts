@@ -18,6 +18,12 @@ export type ReviewMetrics = {
   recommendTraffic: string;
 };
 
+export type TrafficMix = {
+  recommend: number;
+  followers: number;
+  search: number;
+};
+
 export type ReviewRecord = {
   id: string;
   title: string;
@@ -26,7 +32,10 @@ export type ReviewRecord = {
   status: string;
   score: number;
   metrics: ReviewMetrics;
+  wins: string[];
+  risks: string[];
   actions: string[];
+  trafficMix: TrafficMix;
 };
 
 export type ProductRecommendation = {
@@ -37,6 +46,9 @@ export type ProductRecommendation = {
   category: string;
   testingCount: string;
   trendTag: string;
+  competitionTag: string;
+  fitTag: string;
+  entryIdeas: string[];
 };
 
 export type AppStorageSnapshot = {

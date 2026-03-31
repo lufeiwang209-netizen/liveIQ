@@ -1,27 +1,25 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  BackLink,
-  GradientButton,
-  PageTitle,
-  ScreenFrame,
-} from "../components/ui";
+import { BackLink, GradientButton, PageTitle, ScreenFrame, TagPill, WhiteCard } from "../components/ui";
 import { palette } from "../theme";
 
-function SmallStepCard({
+function TipCard({
+  step,
   title,
-  subtitle,
-  color,
+  body,
+  tint,
 }: {
+  step: string;
   title: string;
-  subtitle: string;
-  color: string;
+  body: string;
+  tint: string;
 }) {
   return (
-    <View style={styles.stepCard}>
-      <Text style={[styles.stepCardTitle, { color }]}>{title}</Text>
-      <Text style={styles.stepCardSubtitle}>{subtitle}</Text>
+    <View style={[styles.tipCard, { backgroundColor: tint }]}>
+      <Text style={styles.tipStep}>{step}</Text>
+      <Text style={styles.tipTitle}>{title}</Text>
+      <Text style={styles.tipBody}>{body}</Text>
     </View>
   );
 }
@@ -29,32 +27,63 @@ function SmallStepCard({
 export function UploadScreen({
   onBack,
   onPick,
+  onUseDemo,
 }: {
   onBack: () => void;
   onPick: () => void;
+  onUseDemo: () => void;
 }) {
   return (
     <ScreenFrame withBottomNav={false}>
       <View style={styles.screenInner}>
-        <BackLink label="返回" onPress={onBack} />
-        <PageTitle title="新建复盘" subtitle="上传后台截图，AI 自动帮你看问题" />
+        <BackLink label="返回首页" onPress={onBack} />
+        <PageTitle title="新建复盘" subtitle="上传直播后台截图，系统会自动抽取关键指标" />
 
-        <LinearGradient colors={["#FFF0F7", "#F3EEFF"]} style={styles.uploadCard}>
-          <LinearGradient colors={["#FFB7D5", "#D6B8FF"]} style={styles.uploadOrb} />
-          <Text style={styles.uploadTitle}>上传直播数据截图</Text>
-          <Text style={styles.uploadSubtitle}>支持场观、在线曲线、流量来源等后台图</Text>
-          <Pressable onPress={onPick} style={styles.darkUploadButton}>
-            <Text style={styles.darkUploadButtonText}>选择截图</Text>
-          </Pressable>
+        <LinearGradient colors={["#FFF0F7", "#F5ECFF"]} style={styles.uploadHero}>
+          <View style={styles.uploadHaloOuter} />
+          <View style={styles.uploadHaloInner} />
+          <View style={styles.uploadCard}>
+            <Text style={styles.uploadCardTitle}>把截图丢进来</Text>
+            <Text style={styles.uploadCardBody}>支持场观、在线峰值、停留、来源结构这些后台图。</Text>
+          </View>
+          <View style={styles.uploadTagRow}>
+            <TagPill text="场观" tint="#FFE6F0" color={palette.pinkDeep} />
+            <TagPill text="停留" tint="#EAF3FF" color="#6B8EEB" />
+            <TagPill text="峰值" tint="#EDF9F2" color="#51B37F" />
+          </View>
         </LinearGradient>
 
-        <View style={styles.stepRow}>
-          <SmallStepCard title="1 上传" subtitle="截图或相册" color={palette.pinkDeep} />
-          <SmallStepCard title="2 识别" subtitle="自动抽取数据" color="#7F89FF" />
-          <SmallStepCard title="3 诊断" subtitle="生成行动建议" color="#53B97A" />
+        <View style={styles.tipRow}>
+          <TipCard
+            step="01"
+            title="上传截图"
+            body="优先传完整后台页，不要只截一小块。"
+            tint="#FFF4F8"
+          />
+          <TipCard
+            step="02"
+            title="自动识别"
+            body="系统会先帮你读数，再让你确认。"
+            tint="#EFF4FF"
+          />
+          <TipCard
+            step="03"
+            title="生成动作"
+            body="最后直接给你下一场该怎么改。"
+            tint="#EFFAF4"
+          />
         </View>
 
+        <WhiteCard>
+          <Text style={styles.notesTitle}>建议上传内容</Text>
+          <Text style={styles.notesBody}>1. 本场直播数据概览{"\n"}2. 在线峰值或在线趋势图{"\n"}3. 流量来源结构截图</Text>
+        </WhiteCard>
+
         <GradientButton label="选择截图开始" onPress={onPick} />
+
+        <Pressable onPress={onUseDemo} style={styles.demoButton}>
+          <Text style={styles.demoButtonText}>先用示例数据试一遍</Text>
+        </Pressable>
       </View>
     </ScreenFrame>
   );
@@ -63,69 +92,109 @@ export function UploadScreen({
 const styles = StyleSheet.create({
   screenInner: {
     flex: 1,
-    paddingTop: 6,
+    paddingTop: 10,
     paddingHorizontal: 18,
-    paddingBottom: 18,
     gap: 16,
   },
-  uploadCard: {
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: palette.border,
-    minHeight: 288,
+  uploadHero: {
+    minHeight: 286,
+    borderRadius: 34,
+    overflow: "hidden",
+    paddingHorizontal: 18,
+    paddingVertical: 20,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
   },
-  uploadOrb: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    marginBottom: 18,
+  uploadHaloOuter: {
+    position: "absolute",
+    width: 196,
+    height: 196,
+    borderRadius: 98,
+    backgroundColor: "#FFFFFF55",
   },
-  uploadTitle: {
-    color: "#3B3341",
-    fontSize: 18,
-    fontWeight: "700",
+  uploadHaloInner: {
+    position: "absolute",
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    backgroundColor: "#FFFFFF88",
   },
-  uploadSubtitle: {
-    color: palette.textSoft,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: "center",
+  uploadCard: {
+    width: "100%",
+    borderRadius: 28,
+    backgroundColor: "#FFFFFFD9",
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  uploadCardTitle: {
+    color: palette.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  uploadCardBody: {
     marginTop: 10,
-  },
-  darkUploadButton: {
-    marginTop: 16,
-    backgroundColor: palette.dark,
-    borderRadius: 999,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-  },
-  darkUploadButtonText: {
-    color: "#FFFFFF",
+    color: palette.textSoft,
     fontSize: 14,
-    fontWeight: "700",
+    lineHeight: 20,
+    fontWeight: "500",
   },
-  stepRow: {
+  uploadTagRow: {
+    marginTop: 16,
     flexDirection: "row",
     gap: 10,
   },
-  stepCard: {
+  tipRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  tipCard: {
     flex: 1,
-    backgroundColor: palette.surface,
     borderRadius: 22,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
-  stepCardTitle: {
-    fontSize: 14,
+  tipStep: {
+    color: palette.textMuted,
+    fontSize: 11,
     fontWeight: "700",
   },
-  stepCardSubtitle: {
-    marginTop: 4,
+  tipTitle: {
+    marginTop: 8,
+    color: palette.text,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  tipBody: {
+    marginTop: 6,
     color: palette.textSoft,
     fontSize: 12,
+    lineHeight: 17,
     fontWeight: "500",
+  },
+  notesTitle: {
+    color: palette.text,
+    fontSize: 17,
+    fontWeight: "800",
+  },
+  notesBody: {
+    marginTop: 10,
+    color: palette.textSoft,
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: "500",
+  },
+  demoButton: {
+    height: 54,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: palette.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  demoButtonText: {
+    color: palette.textSoft,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

@@ -22,19 +22,26 @@ export function ScreenFrame({
   withBottomNav?: boolean;
 }) {
   return (
-    <View style={styles.canvas}>
-      <View style={styles.statusBar}>
-        <Text style={styles.statusTime}>9:41</Text>
-        <Text style={styles.statusDots}>●●●</Text>
-      </View>
+    <LinearGradient colors={["#FFF9FC", "#FFF2F8"]} style={styles.bgFill}>
+      <View style={styles.topGlowPink} />
+      <View style={styles.topGlowBlue} />
       <View style={[styles.contentWrap, !withBottomNav && styles.contentWrapNoNav]}>{children}</View>
-    </View>
+    </LinearGradient>
   );
 }
 
-export function ScreenScroll({ children }: { children: React.ReactNode }) {
+export function ScreenScroll({
+  children,
+  contentContainerStyle,
+}: {
+  children: React.ReactNode;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+}) {
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[styles.scrollContent, contentContainerStyle]}
+    >
       {children}
     </ScrollView>
   );
@@ -43,15 +50,17 @@ export function ScreenScroll({ children }: { children: React.ReactNode }) {
 export function BottomNav({
   activeTab,
   onChange,
+  onPrimaryAction,
 }: {
   activeTab: TabKey;
   onChange: (tab: TabKey) => void;
+  onPrimaryAction?: () => void;
 }) {
-  const items: Array<{ key: TabKey; label: string; icon: string }> = [
-    { key: "home", label: "首页", icon: "⌂" },
-    { key: "report", label: "复盘", icon: "⌁" },
-    { key: "picks", label: "选品", icon: "✦" },
-    { key: "profile", label: "我的", icon: "◎" },
+  const items: Array<{ key: TabKey; label: string }> = [
+    { key: "home", label: "首页" },
+    { key: "report", label: "复盘" },
+    { key: "picks", label: "选品" },
+    { key: "profile", label: "我的" },
   ];
 
   return (
@@ -60,16 +69,19 @@ export function BottomNav({
         {items.map((item) => {
           const active = activeTab === item.key;
           return (
-            <Pressable
-              key={item.key}
-              onPress={() => onChange(item.key)}
-              style={[styles.tabItem, active && styles.tabItemActive]}
-            >
-              <Text style={[styles.tabIcon, active && styles.tabIconActive]}>{item.icon}</Text>
+            <Pressable key={item.key} onPress={() => onChange(item.key)} style={styles.tabItem}>
+              <View style={[styles.tabDot, active && styles.tabDotActive]} />
               <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
             </Pressable>
           );
         })}
+        {onPrimaryAction ? (
+          <Pressable onPress={onPrimaryAction} style={styles.primaryActionButton}>
+            <LinearGradient colors={["#FFB2D1", "#CDA5FF"]} style={styles.primaryActionGradient}>
+              <Text style={styles.primaryActionText}>+</Text>
+            </LinearGradient>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -83,10 +95,10 @@ export function PageTitle({
   subtitle?: string;
 }) {
   return (
-    <>
+    <View style={styles.pageTitleWrap}>
       <Text style={styles.pageTitle}>{title}</Text>
       {subtitle ? <Text style={styles.pageSubtitle}>{subtitle}</Text> : null}
-    </>
+    </View>
   );
 }
 
@@ -98,8 +110,8 @@ export function BackLink({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress}>
-      <Text style={styles.backLink}>‹ {label}</Text>
+    <Pressable onPress={onPress} style={styles.backLinkWrap}>
+      <Text style={styles.backLink}>{"<"} {label}</Text>
     </Pressable>
   );
 }
@@ -114,11 +126,11 @@ export function GradientButton({
   small?: boolean;
 }) {
   return (
-    <Pressable onPress={onPress} style={small ? styles.gradientButtonSmallWrap : undefined}>
+    <Pressable onPress={onPress} style={small ? styles.buttonSmallWrap : undefined}>
       <LinearGradient
-        colors={["#CFA7FF", "#FFB4CF"]}
+        colors={["#FFB5D2", "#CFA8FF"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[styles.gradientButton, small && styles.gradientButtonSmall]}
       >
         <Text style={styles.gradientButtonText}>{label}</Text>
@@ -127,69 +139,20 @@ export function GradientButton({
   );
 }
 
-export function GradientFeatureCard({
-  title,
-  subtitle,
-  colors,
+export function WhiteCard({
+  children,
   compact,
-  onPress,
+  style,
 }: {
-  title: string;
-  subtitle: string;
-  colors: readonly [string, string];
+  children: React.ReactNode;
   compact?: boolean;
-  onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }) {
-  return (
-    <Pressable onPress={onPress} style={styles.featureCardWrap}>
-      <LinearGradient
-        colors={[colors[0], colors[1]]}
-        style={[styles.featureCard, compact && styles.featureCardSmall]}
-      >
-        <Text style={[styles.featureTitle, compact && styles.featureTitleSmall]}>{title}</Text>
-        <Text style={styles.featureSubtitle}>{subtitle}</Text>
-      </LinearGradient>
-    </Pressable>
-  );
+  return <View style={[styles.whiteCard, compact && styles.whiteCardCompact, style]}>{children}</View>;
 }
 
-export function InfoChip({
-  text,
-  tint,
-  color,
-}: {
-  text: string;
-  tint: string;
-  color: string;
-}) {
-  return (
-    <View style={[styles.infoChip, { backgroundColor: tint }]}>
-      <Text style={[styles.infoChipText, { color }]}>{text}</Text>
-    </View>
-  );
-}
-
-export function SearchBar({
-  value,
-  onChangeText,
-}: {
-  value: string;
-  onChangeText: (text: string) => void;
-}) {
-  return (
-    <View style={styles.searchBar}>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder="搜索关键词"
-        placeholderTextColor={palette.textMuted}
-        style={styles.searchInput}
-      />
-      <LinearGradient colors={["#FFB4CF", "#F6A7DE"]} style={styles.searchButton}>
-        <Text style={styles.searchButtonText}>搜索</Text>
-      </LinearGradient>
-    </View>
-  );
+export function CardTitle({ children }: { children: React.ReactNode }) {
+  return <Text style={styles.cardTitle}>{children}</Text>;
 }
 
 export function SectionHeader({
@@ -207,20 +170,45 @@ export function SectionHeader({
   );
 }
 
-export function WhiteCard({
-  children,
-  compact,
-  style,
+export function SearchBar({
+  value,
+  onChangeText,
+  placeholder = "搜索关键词",
 }: {
-  children: React.ReactNode;
-  compact?: boolean;
-  style?: StyleProp<ViewStyle>;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
 }) {
-  return <View style={[compact ? styles.whiteCardCompact : styles.whiteCard, style]}>{children}</View>;
+  return (
+    <View style={styles.searchWrap}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={palette.textMuted}
+        style={styles.searchInput}
+      />
+      <LinearGradient colors={["#FFBED6", "#F3A4DE"]} style={styles.searchAction}>
+        <Text style={styles.searchActionText}>搜索</Text>
+      </LinearGradient>
+    </View>
+  );
 }
 
-export function CardTitle({ children }: { children: React.ReactNode }) {
-  return <Text style={styles.cardTitleDark}>{children}</Text>;
+export function TagPill({
+  text,
+  tint,
+  color,
+}: {
+  text: string;
+  tint: string;
+  color: string;
+}) {
+  return (
+    <View style={[styles.tagPill, { backgroundColor: tint }]}>
+      <Text style={[styles.tagPillText, { color }]}>{text}</Text>
+    </View>
+  );
 }
 
 export function SavedChip({ label }: { label: string }) {
@@ -243,111 +231,153 @@ export function NoteText({
 
 const styles = StyleSheet.create({
   canvas: {
-    width: 393,
-    height: 852,
-    borderRadius: 36,
-    backgroundColor: palette.bg,
+    flex: 1,
     overflow: "hidden",
-    shadowColor: "#C99AFF",
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.16,
-    shadowRadius: 30,
-    elevation: 10,
+    backgroundColor: palette.bg,
   },
-  statusBar: {
-    height: 62,
-    paddingHorizontal: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  bgFill: {
+    flex: 1,
+    backgroundColor: palette.bg,
   },
-  statusTime: {
-    color: palette.text,
-    fontSize: 18,
-    fontWeight: "700",
+  topGlowPink: {
+    position: "absolute",
+    top: -100,
+    left: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: "#FFD8EA",
+    opacity: 0.65,
   },
-  statusDots: {
-    color: palette.text,
-    fontSize: 12,
-    fontWeight: "700",
+  topGlowBlue: {
+    position: "absolute",
+    top: -50,
+    right: -20,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "#E3E5FF",
+    opacity: 0.75,
   },
   contentWrap: {
     flex: 1,
+    paddingTop: 10,
   },
   contentWrapNoNav: {
     paddingBottom: 18,
   },
   scrollContent: {
-    paddingTop: 6,
     paddingHorizontal: 18,
-    paddingBottom: 12,
+    paddingTop: 10,
+    paddingBottom: 124,
     gap: 16,
   },
   bottomWrap: {
-    paddingTop: 10,
-    paddingHorizontal: 18,
-    paddingBottom: 20,
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 18,
   },
   bottomPill: {
-    height: 62,
-    borderRadius: 36,
-    backgroundColor: "#FFFFFFDD",
+    height: 78,
+    borderRadius: 30,
+    backgroundColor: "#FFFFFFF2",
     borderWidth: 1,
-    borderColor: "#F3DDEB",
+    borderColor: "#F5E5EE",
     flexDirection: "row",
-    padding: 4,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.32,
+    shadowRadius: 22,
+    elevation: 10,
   },
   tabItem: {
     flex: 1,
-    borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
+    gap: 7,
   },
-  tabItemActive: {
-    backgroundColor: "#FFD5E8",
+  tabDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#E8DEEB",
   },
-  tabIcon: {
-    color: "#B6A9BC",
-    fontSize: 16,
-  },
-  tabIconActive: {
-    color: "#D85A90",
+  tabDotActive: {
+    backgroundColor: palette.pinkDeep,
+    width: 22,
   },
   tabLabel: {
-    color: "#B6A9BC",
-    fontSize: 10,
+    color: palette.textMuted,
+    fontSize: 12,
     fontWeight: "600",
   },
   tabLabelActive: {
-    color: "#D85A90",
+    color: palette.pinkDeep,
     fontWeight: "700",
+  },
+  primaryActionButton: {
+    position: "absolute",
+    alignSelf: "center",
+    top: -18,
+  },
+  primaryActionGradient: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 5,
+    borderColor: "#FFF7FB",
+  },
+  primaryActionText: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    lineHeight: 32,
+    fontWeight: "700",
+    marginTop: -1,
+  },
+  pageTitleWrap: {
+    gap: 4,
   },
   pageTitle: {
     color: palette.text,
-    fontSize: 24,
-    lineHeight: 30,
+    fontSize: 29,
+    lineHeight: 34,
     fontWeight: "800",
   },
   pageSubtitle: {
-    marginTop: -10,
     color: palette.textSoft,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: "500",
   },
+  backLinkWrap: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    backgroundColor: "#FFFFFFAA",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
   backLink: {
-    color: palette.textSoft,
-    fontSize: 14,
-    fontWeight: "600",
+    color: palette.text,
+    fontSize: 13,
+    fontWeight: "700",
   },
   gradientButton: {
-    height: 54,
+    height: 58,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#E9A6C8",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
   },
-  gradientButtonSmallWrap: {
+  buttonSmallWrap: {
     flex: 1,
   },
   gradientButtonSmall: {
@@ -355,61 +385,54 @@ const styles = StyleSheet.create({
   },
   gradientButtonText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 15,
+    fontWeight: "800",
   },
-  featureCardWrap: {
-    flex: 1,
-  },
-  featureCard: {
-    minHeight: 110,
-    borderRadius: 26,
+  whiteCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
     paddingHorizontal: 16,
-    paddingVertical: 18,
-  },
-  featureCardSmall: {
-    minHeight: 96,
-    borderRadius: 24,
-    paddingHorizontal: 14,
     paddingVertical: 16,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 4,
   },
-  featureTitle: {
-    color: "#FFFFFF",
+  whiteCardCompact: {
+    paddingVertical: 14,
+  },
+  cardTitle: {
+    color: palette.text,
     fontSize: 17,
-    lineHeight: 22,
-    fontWeight: "700",
+    fontWeight: "800",
   },
-  featureTitleSmall: {
-    fontSize: 16,
-  },
-  featureSubtitle: {
-    marginTop: 8,
-    color: "#FDF9FF",
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-  },
-  infoChip: {
-    flex: 1,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 11,
-  },
-  infoChipText: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  searchBar: {
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: palette.surface,
-    borderWidth: 1,
-    borderColor: palette.border,
+  sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionTitle: {
+    color: palette.text,
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  sectionLink: {
+    color: palette.textSoft,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  searchWrap: {
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: palette.border,
     paddingLeft: 16,
-    paddingRight: 6,
+    paddingRight: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   searchInput: {
     flex: 1,
@@ -417,67 +440,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  searchButton: {
-    width: 72,
-    height: 40,
-    borderRadius: 999,
+  searchAction: {
+    minWidth: 74,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 14,
   },
-  searchButtonText: {
+  searchActionText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
   },
-  sectionHeader: {
-    marginTop: 2,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  tagPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
-  sectionTitle: {
-    color: palette.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  sectionLink: {
-    color: "#9B90A8",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  whiteCard: {
-    backgroundColor: palette.surface,
-    borderRadius: 28,
-    padding: 16,
-  },
-  whiteCardCompact: {
-    backgroundColor: palette.surface,
-    borderRadius: 28,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  cardTitleDark: {
-    color: palette.text,
-    fontSize: 17,
+  tagPillText: {
+    fontSize: 12,
     fontWeight: "700",
   },
   savedChip: {
-    backgroundColor: "#FFE7F1",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: "#EEF9F2",
   },
   savedChipText: {
-    color: palette.pinkDeep,
+    color: "#46A972",
     fontSize: 12,
     fontWeight: "700",
   },
   noteText: {
-    color: "#6E6476",
-    fontSize: 13,
-    lineHeight: 20,
+    marginTop: 12,
+    color: palette.textSoft,
+    fontSize: 14,
+    lineHeight: 21,
     fontWeight: "500",
   },
 });
-
-export const sharedStyles = styles;

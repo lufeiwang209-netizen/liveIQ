@@ -4,36 +4,48 @@ import { LinearGradient } from "expo-linear-gradient";
 import {
   BottomNav,
   CardTitle,
-  PageTitle,
   SavedChip,
   ScreenFrame,
   ScreenScroll,
+  SectionHeader,
+  TagPill,
   WhiteCard,
 } from "../components/ui";
-import { TabKey, ReviewRecord } from "../types";
+import { palette } from "../theme";
+import { ReviewRecord, TabKey } from "../types";
 
-function DiagnosisMiniCard({
+function BreakdownCard({
   title,
-  titleColor,
-  text,
+  items,
+  tint,
+  color,
 }: {
   title: string;
-  titleColor: string;
-  text: string;
+  items: string[];
+  tint: string;
+  color: string;
 }) {
   return (
-    <View style={styles.miniCard}>
-      <Text style={[styles.miniCardTitle, { color: titleColor }]}>{title}</Text>
-      <Text style={styles.miniCardText}>{text}</Text>
+    <View style={[styles.breakdownCard, { backgroundColor: tint }]}>
+      <Text style={[styles.breakdownTitle, { color }]}>{title}</Text>
+      {items.map((item) => (
+        <Text key={item} style={styles.breakdownText}>
+          {item}
+        </Text>
+      ))}
     </View>
   );
 }
 
-function LineChart() {
+function CurveChart() {
   return (
-    <View style={styles.chartArea}>
-      <View style={styles.chartLinePurple} />
-      <View style={styles.chartLinePink} />
+    <View style={styles.chartWrap}>
+      <View style={styles.chartBaseLine} />
+      <View style={styles.chartLineOne} />
+      <View style={styles.chartLineTwo} />
+      <View style={[styles.chartDot, styles.chartDotLeft]} />
+      <View style={[styles.chartDot, styles.chartDotCenter]} />
+      <View style={[styles.chartDot, styles.chartDotRight]} />
     </View>
   );
 }
@@ -42,60 +54,89 @@ export function ReportScreen({
   review,
   activeTab,
   onTabChange,
+  onCreateReview,
 }: {
   review: ReviewRecord;
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
+  onCreateReview: () => void;
 }) {
+  const wins = review.wins ?? [];
+  const risks = review.risks ?? [];
+  const trafficMix = review.trafficMix ?? { recommend: 54, followers: 26, search: 20 };
+
   return (
     <ScreenFrame>
       <ScreenScroll>
         <View style={styles.headerRow}>
-          <PageTitle title="复盘报告" />
-          <SavedChip label="已保存" />
+          <View>
+            <Text style={styles.pageTitle}>复盘报告</Text>
+            <Text style={styles.pageSubtitle}>{review.title}</Text>
+          </View>
+          <SavedChip label="已归档" />
         </View>
 
-        <LinearGradient colors={["#FFB7D5", "#D8C3FF"]} style={styles.summaryCard}>
-          <Text style={styles.summaryMeta}>{review.dateLabel}</Text>
-          <Text style={styles.summaryScore}>{review.score}</Text>
-          <Text style={styles.summaryText}>{review.summary}</Text>
+        <LinearGradient colors={["#FFBDD9", "#D3C8FF"]} style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <TagPill text={review.dateLabel} tint="#FFFFFF33" color="#FFFFFF" />
+            <Text style={styles.heroStatus}>{review.status}</Text>
+          </View>
+          <Text style={styles.heroScore}>{review.score}</Text>
+          <Text style={styles.heroSummary}>{review.summary}</Text>
+          <View style={styles.metricRow}>
+            <View style={styles.metricBubble}>
+              <Text style={styles.metricBubbleLabel}>场观</Text>
+              <Text style={styles.metricBubbleValue}>{review.metrics.audience}</Text>
+            </View>
+            <View style={styles.metricBubble}>
+              <Text style={styles.metricBubbleLabel}>在线峰值</Text>
+              <Text style={styles.metricBubbleValue}>{review.metrics.onlinePeak}</Text>
+            </View>
+            <View style={styles.metricBubble}>
+              <Text style={styles.metricBubbleLabel}>平均停留</Text>
+              <Text style={styles.metricBubbleValue}>{review.metrics.avgStay}</Text>
+            </View>
+          </View>
         </LinearGradient>
 
-        <View style={styles.diagnosisRow}>
-          <DiagnosisMiniCard title="亮点" titleColor="#FF73A6" text="开场 10 分钟峰值冲高" />
-          <DiagnosisMiniCard title="问题" titleColor="#7F89FF" text="平均停留略短" />
-          <DiagnosisMiniCard title="建议" titleColor="#5ABF8A" text="福利节奏提前" />
+        <View style={styles.breakdownRow}>
+          <BreakdownCard title="亮点" items={wins.slice(0, 2)} tint="#FFF1F7" color={palette.pinkDeep} />
+          <BreakdownCard title="问题" items={risks.slice(0, 2)} tint="#EEF4FF" color="#6B8EEB" />
         </View>
 
         <WhiteCard>
-          <CardTitle>实时在线曲线</CardTitle>
-          <LineChart />
+          <CardTitle>在线走势判断</CardTitle>
+          <Text style={styles.cardBody}>开场冲得不错，但中段没有第二次拉升，说明福利节奏和主推承接还可以更紧一点。</Text>
+          <CurveChart />
         </WhiteCard>
 
-        <WhiteCard compact>
-          <CardTitle>流量来源结构</CardTitle>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressSeg, { backgroundColor: "#FF9CC8", flex: 0.54 }]} />
-            <View style={[styles.progressSeg, { backgroundColor: "#B8D2FF", flex: 0.26 }]} />
-            <View style={[styles.progressSeg, { backgroundColor: "#C8F0D9", flex: 0.2 }]} />
+        <WhiteCard>
+          <SectionHeader title="流量来源结构" link={review.metrics.recommendTraffic} />
+          <View style={styles.mixBar}>
+            <View style={[styles.mixSegment, { flex: trafficMix.recommend, backgroundColor: "#FF9FC9" }]} />
+            <View style={[styles.mixSegment, { flex: trafficMix.followers, backgroundColor: "#A9C8FF" }]} />
+            <View style={[styles.mixSegment, { flex: trafficMix.search, backgroundColor: "#92DAB6" }]} />
           </View>
-          <View style={styles.legendRow}>
-            <Text style={[styles.legendText, { color: "#D46993" }]}>推荐 54%</Text>
-            <Text style={[styles.legendText, { color: "#6B8EEB" }]}>粉丝 26%</Text>
-            <Text style={[styles.legendText, { color: "#53B97A" }]}>搜索 20%</Text>
+          <View style={styles.mixLegendRow}>
+            <Text style={[styles.mixLegend, { color: palette.pinkDeep }]}>推荐 {trafficMix.recommend}%</Text>
+            <Text style={[styles.mixLegend, { color: "#6B8EEB" }]}>粉丝 {trafficMix.followers}%</Text>
+            <Text style={[styles.mixLegend, { color: "#51B37F" }]}>搜索 {trafficMix.search}%</Text>
           </View>
         </WhiteCard>
 
-        <LinearGradient colors={["#FFF0F7", "#F3EEFF"]} style={styles.actionCard}>
-          <CardTitle>明日行动</CardTitle>
+        <LinearGradient colors={["#FFF3F8", "#F6F1FF"]} style={styles.actionCard}>
+          <CardTitle>明日动作</CardTitle>
           {review.actions.map((action, index) => (
-            <Text key={action} style={styles.actionText}>
-              {index + 1}. {action}
-            </Text>
+            <View key={action} style={styles.actionRow}>
+              <View style={styles.actionIndex}>
+                <Text style={styles.actionIndexText}>{index + 1}</Text>
+              </View>
+              <Text style={styles.actionText}>{action}</Text>
+            </View>
           ))}
         </LinearGradient>
       </ScreenScroll>
-      <BottomNav activeTab={activeTab} onChange={onTabChange} />
+      <BottomNav activeTab={activeTab} onChange={onTabChange} onPrimaryAction={onCreateReview} />
     </ScreenFrame>
   );
 }
@@ -106,110 +147,201 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  summaryCard: {
-    borderRadius: 30,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-  },
-  summaryMeta: {
-    color: "#FFFFFFCC",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  summaryScore: {
-    color: "#FFFFFF",
-    fontSize: 42,
+  pageTitle: {
+    color: palette.text,
+    fontSize: 29,
     fontWeight: "800",
-    marginTop: 6,
   },
-  summaryText: {
-    color: "#FFF8FF",
+  pageSubtitle: {
+    marginTop: 4,
+    color: palette.textSoft,
     fontSize: 13,
-    lineHeight: 18,
     fontWeight: "500",
   },
-  diagnosisRow: {
+  heroCard: {
+    borderRadius: 34,
+    padding: 18,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  heroStatus: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  heroScore: {
+    marginTop: 12,
+    color: "#FFFFFF",
+    fontSize: 54,
+    lineHeight: 58,
+    fontWeight: "800",
+  },
+  heroSummary: {
+    marginTop: 6,
+    color: "#FFF9FD",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  metricRow: {
+    marginTop: 16,
     flexDirection: "row",
     gap: 10,
   },
-  miniCard: {
+  metricBubble: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF2D",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  metricBubbleLabel: {
+    color: "#FFF7FB",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  metricBubbleValue: {
+    marginTop: 6,
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  breakdownRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  breakdownCard: {
+    flex: 1,
+    borderRadius: 26,
+    padding: 16,
+    gap: 8,
+  },
+  breakdownTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  breakdownText: {
+    color: palette.text,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+  cardBody: {
+    marginTop: 10,
+    color: palette.textSoft,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  chartWrap: {
+    height: 116,
+    marginTop: 18,
     borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    shadowColor: "#EACEEA",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 2,
+    backgroundColor: "#FFF8FC",
+    overflow: "hidden",
   },
-  miniCardTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  miniCardText: {
-    marginTop: 8,
-    color: "#3B3341",
-    fontSize: 14,
-    lineHeight: 19,
-    fontWeight: "700",
-  },
-  chartArea: {
-    height: 76,
-    marginTop: 12,
-    position: "relative",
-  },
-  chartLinePurple: {
+  chartBaseLine: {
     position: "absolute",
-    left: 18,
-    right: 110,
-    bottom: 24,
-    height: 3,
-    borderRadius: 999,
-    backgroundColor: "#B6A5F3",
-    transform: [{ rotate: "-26deg" }],
+    left: 16,
+    right: 16,
+    bottom: 22,
+    height: 2,
+    backgroundColor: "#F0E3ED",
   },
-  chartLinePink: {
+  chartLineOne: {
     position: "absolute",
-    left: 150,
-    right: 22,
-    bottom: 24,
-    height: 3,
+    left: 28,
+    width: 152,
+    bottom: 52,
+    height: 4,
     borderRadius: 999,
-    backgroundColor: "#F59BC8",
-    transform: [{ rotate: "18deg" }],
+    backgroundColor: "#F79BC8",
+    transform: [{ rotate: "-18deg" }],
   },
-  progressBar: {
+  chartLineTwo: {
+    position: "absolute",
+    right: 26,
+    width: 138,
+    bottom: 48,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "#B5A5F6",
+    transform: [{ rotate: "14deg" }],
+  },
+  chartDot: {
+    position: "absolute",
+    width: 14,
     height: 14,
+    borderRadius: 7,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 3,
+  },
+  chartDotLeft: {
+    left: 74,
+    bottom: 52,
+    borderColor: "#F79BC8",
+  },
+  chartDotCenter: {
+    left: 166,
+    bottom: 86,
+    borderColor: "#F79BC8",
+  },
+  chartDotRight: {
+    right: 86,
+    bottom: 66,
+    borderColor: "#B5A5F6",
+  },
+  mixBar: {
+    marginTop: 14,
+    height: 16,
     borderRadius: 999,
     overflow: "hidden",
-    backgroundColor: "#F6EEF6",
     flexDirection: "row",
-    marginTop: 12,
+    backgroundColor: "#F6EEF4",
   },
-  progressSeg: {
+  mixSegment: {
     height: "100%",
   },
-  legendRow: {
+  mixLegendRow: {
+    marginTop: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
   },
-  legendText: {
-    fontSize: 11,
+  mixLegend: {
+    fontSize: 12,
     fontWeight: "700",
   },
   actionCard: {
-    borderRadius: 28,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 6,
+    borderRadius: 32,
+    padding: 16,
+    gap: 12,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  actionIndex: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionIndexText: {
+    color: palette.pinkDeep,
+    fontSize: 13,
+    fontWeight: "800",
   },
   actionText: {
-    color: "#4B4155",
-    fontSize: 11,
-    lineHeight: 16,
+    flex: 1,
+    color: palette.text,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
   },
 });

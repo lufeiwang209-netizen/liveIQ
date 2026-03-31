@@ -1,11 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import {
-  BottomNav,
-  PageTitle,
-  ScreenFrame,
-  ScreenScroll,
-} from "../components/ui";
+import { BottomNav, PageTitle, ScreenFrame, ScreenScroll, TagPill, WhiteCard } from "../components/ui";
 import { palette } from "../theme";
 import { ReviewRecord, TabKey } from "../types";
 
@@ -14,87 +9,146 @@ export function HistoryScreen({
   activeTab,
   onTabChange,
   onSelect,
+  onCreateReview,
 }: {
   reviews: ReviewRecord[];
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
   onSelect: (review: ReviewRecord) => void;
+  onCreateReview: () => void;
 }) {
   return (
     <ScreenFrame>
       <ScreenScroll>
-        <PageTitle title="历史复盘" />
+        <PageTitle title="历史复盘" subtitle="每一场都会沉淀成你的直播增长资产" />
+
+        <WhiteCard style={styles.summaryCard}>
+          <View style={styles.summaryBlock}>
+            <Text style={styles.summaryLabel}>已归档场次</Text>
+            <Text style={styles.summaryValue}>{reviews.length}</Text>
+          </View>
+          <View style={styles.summaryBlock}>
+            <Text style={styles.summaryLabel}>最近状态</Text>
+            <Text style={styles.summaryValueSmall}>{reviews[0]?.status ?? "良好"}</Text>
+          </View>
+        </WhiteCard>
+
         <View style={styles.filterRow}>
-          <View style={[styles.filterChip, styles.filterChipActive]}>
-            <Text style={[styles.filterChipText, styles.filterChipTextActive]}>全部</Text>
-          </View>
-          <View style={styles.filterChip}>
-            <Text style={styles.filterChipText}>近 7 天</Text>
-          </View>
+          <TagPill text="全部" tint="#FFEAF3" color={palette.pinkDeep} />
+          <TagPill text="近 7 天" tint="#FFFFFF" color={palette.textSoft} />
+          <TagPill text="需重点看" tint="#FFFFFF" color={palette.textSoft} />
         </View>
 
-        {reviews.map((review, index) => (
-          <Pressable key={review.id} onPress={() => onSelect(review)} style={styles.historyCardWrap}>
-            <View style={[styles.historyCard, index === 2 && styles.historyCardGradient]}>
-              <Text style={styles.historyCardTitle}>{review.title}</Text>
-              <Text style={styles.historyCardSummary}>结论：{review.summary}</Text>
+        {reviews.map((review) => (
+          <Pressable key={review.id} onPress={() => onSelect(review)} style={styles.historyCard}>
+            <View style={styles.historyTopRow}>
+              <View>
+                <Text style={styles.historyTitle}>{review.title}</Text>
+                <Text style={styles.historyStatus}>{review.dateLabel}</Text>
+              </View>
+              <View style={styles.scoreWrap}>
+                <Text style={styles.scoreText}>{review.score}</Text>
+              </View>
+            </View>
+            <Text style={styles.historySummary}>{review.summary}</Text>
+            <View style={styles.historyFooter}>
+              <Text style={styles.historyMetric}>场观 {review.metrics.audience}</Text>
+              <Text style={styles.historyMetric}>停留 {review.metrics.avgStay}</Text>
+              <Text style={styles.historyMetric}>推荐 {review.metrics.recommendTraffic}</Text>
             </View>
           </Pressable>
         ))}
       </ScreenScroll>
-      <BottomNav activeTab={activeTab} onChange={onTabChange} />
+      <BottomNav activeTab={activeTab} onChange={onTabChange} onPrimaryAction={onCreateReview} />
     </ScreenFrame>
   );
 }
 
 const styles = StyleSheet.create({
+  summaryCard: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  summaryBlock: {
+    flex: 1,
+  },
+  summaryLabel: {
+    color: palette.textSoft,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  summaryValue: {
+    marginTop: 8,
+    color: palette.text,
+    fontSize: 34,
+    fontWeight: "800",
+  },
+  summaryValueSmall: {
+    marginTop: 12,
+    color: palette.pinkDeep,
+    fontSize: 20,
+    fontWeight: "800",
+  },
   filterRow: {
     flexDirection: "row",
     gap: 10,
   },
-  filterChip: {
-    flex: 1,
-    borderRadius: 999,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-  },
-  filterChipActive: {
-    backgroundColor: "#FFD5E8",
-  },
-  filterChipText: {
-    color: palette.textSoft,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  filterChipTextActive: {
-    color: palette.pinkDeep,
-    fontWeight: "700",
-  },
-  historyCardWrap: {
-    marginBottom: 12,
-  },
   historyCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 14,
-    minHeight: 126,
+    borderRadius: 30,
+    padding: 16,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 3,
+  },
+  historyTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  historyTitle: {
+    color: palette.text,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  historyStatus: {
+    marginTop: 6,
+    color: palette.textSoft,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  scoreWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 20,
+    backgroundColor: "#FFF1F7",
+    alignItems: "center",
     justifyContent: "center",
   },
-  historyCardGradient: {
-    backgroundColor: "#FFF4FA",
+  scoreText: {
+    color: palette.pinkDeep,
+    fontSize: 24,
+    fontWeight: "800",
   },
-  historyCardTitle: {
+  historySummary: {
+    marginTop: 14,
     color: palette.text,
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
   },
-  historyCardSummary: {
-    marginTop: 10,
-    color: "#6E6476",
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "600",
+  historyFooter: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  historyMetric: {
+    color: palette.textSoft,
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

@@ -3,11 +3,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   BottomNav,
-  GradientFeatureCard,
   ScreenFrame,
   ScreenScroll,
   SearchBar,
   SectionHeader,
+  TagPill,
 } from "../components/ui";
 import { pickCategories } from "../data/mock";
 import { ProductRecommendation, TabKey } from "../types";
@@ -18,33 +18,35 @@ export function PicksScreen({
   activeTab,
   onTabChange,
   onSelect,
+  onCreateReview,
 }: {
   picks: ProductRecommendation[];
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
   onSelect: (product: ProductRecommendation) => void;
+  onCreateReview: () => void;
 }) {
   const [search, setSearch] = useState("");
-  const visiblePicks = picks.filter((pick) =>
-    pick.title.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  const keyword = search.trim().toLowerCase();
+  const visiblePicks = picks.filter((pick) => {
+    if (!keyword) return true;
+    return `${pick.title} ${pick.subtitle} ${pick.category}`.toLowerCase().includes(keyword);
+  });
 
   return (
     <ScreenFrame>
       <ScreenScroll>
-        <SearchBar value={search} onChangeText={setSearch} />
+        <SearchBar value={search} onChangeText={setSearch} placeholder="搜索品类、关键词或测试方向" />
 
-        <View style={styles.cardGrid}>
-          <GradientFeatureCard
-            title="潜力爆款"
-            subtitle="增长快，竞争还不算高"
-            colors={["#FFB9C8", "#FFCBEA"]}
-          />
-          <GradientFeatureCard
-            title="内容切口"
-            subtitle="更适合你的讲解风格"
-            colors={["#C4D8FF", "#D8C7FF"]}
-          />
+        <View style={styles.highlightRow}>
+          <LinearGradient colors={["#FFBED7", "#FFD8ED"]} style={styles.highlightCard}>
+            <Text style={styles.highlightTitle}>潜力爆款</Text>
+            <Text style={styles.highlightBody}>优先看增长快、竞争还没彻底卷满的商品。</Text>
+          </LinearGradient>
+          <LinearGradient colors={["#C9DAFF", "#E1D1FF"]} style={styles.highlightCard}>
+            <Text style={styles.highlightTitle}>内容切口</Text>
+            <Text style={styles.highlightBody}>更适合你快节奏讲解和对比型表达的货。</Text>
+          </LinearGradient>
         </View>
 
         <View style={styles.categoryRow}>
@@ -60,36 +62,52 @@ export function PicksScreen({
           ))}
         </View>
 
-        <SectionHeader title="适合你测" link="查看更多" />
+        <SectionHeader title="适合你先测" link={`${visiblePicks.length} 个结果`} />
 
-        {visiblePicks.map((pick, index) => (
+        {visiblePicks.map((pick) => (
           <Pressable key={pick.id} onPress={() => onSelect(pick)} style={styles.pickCard}>
-            <LinearGradient
-              colors={
-                index === 0
-                  ? ["#FFE0F0", "#D8D7FF"]
-                  : index === 1
-                    ? ["#FFF0D1", "#FFD7EA"]
-                    : ["#DFF5FF", "#E9D9FF"]
-              }
-              style={styles.pickThumb}
-            />
+            <LinearGradient colors={["#FFF1F7", "#F1EDFF"]} style={styles.pickThumb}>
+              <Text style={styles.pickCategory}>{pick.category}</Text>
+            </LinearGradient>
             <View style={styles.pickBody}>
               <Text style={styles.pickTitle}>{pick.title}</Text>
               <Text style={styles.pickSubtitle}>{pick.subtitle}</Text>
+              <View style={styles.pickTagRow}>
+                <TagPill text={pick.trendTag} tint="#FFF1F7" color={palette.pinkDeep} />
+                <TagPill text={pick.competitionTag} tint="#EEF4FF" color="#6B8EEB" />
+                <TagPill text={pick.fitTag} tint="#EFFAF4" color="#51B37F" />
+              </View>
             </View>
           </Pressable>
         ))}
       </ScreenScroll>
-      <BottomNav activeTab={activeTab} onChange={onTabChange} />
+      <BottomNav activeTab={activeTab} onChange={onTabChange} onPrimaryAction={onCreateReview} />
     </ScreenFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  cardGrid: {
+  highlightRow: {
     flexDirection: "row",
     gap: 12,
+  },
+  highlightCard: {
+    flex: 1,
+    minHeight: 124,
+    borderRadius: 28,
+    padding: 16,
+  },
+  highlightTitle: {
+    color: palette.text,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  highlightBody: {
+    marginTop: 10,
+    color: "#5C5164",
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "500",
   },
   categoryRow: {
     flexDirection: "row",
@@ -98,50 +116,66 @@ const styles = StyleSheet.create({
   categoryCard: {
     flex: 1,
     minHeight: 92,
-    borderRadius: 22,
+    borderRadius: 24,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   categoryTitle: {
     color: "#FFFFFF",
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   categoryCount: {
-    marginTop: 8,
-    color: "#FBF7FF",
-    fontSize: 11,
+    marginTop: 10,
+    color: "#FFF9FD",
+    fontSize: 12,
     fontWeight: "600",
   },
   pickCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 8,
+    borderRadius: 28,
+    padding: 10,
     flexDirection: "row",
     gap: 12,
     alignItems: "center",
-    marginBottom: 12,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 3,
   },
   pickThumb: {
-    width: 72,
-    height: 68,
-    borderRadius: 18,
+    width: 92,
+    height: 104,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pickCategory: {
+    color: palette.text,
+    fontSize: 17,
+    fontWeight: "800",
   },
   pickBody: {
     flex: 1,
-    justifyContent: "center",
   },
   pickTitle: {
     color: palette.text,
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: "700",
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "800",
   },
   pickSubtitle: {
-    marginTop: 6,
+    marginTop: 8,
     color: palette.textSoft,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: "500",
+  },
+  pickTagRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
   },
 });
