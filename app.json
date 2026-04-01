@@ -4,18 +4,27 @@
     "slug": "liveiq-mvp",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/lu.png",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
+      "buildNumber": "1",
       "supportsTablet": false,
-      "bundleIdentifier": "com.anonymous.liveiq-mvp"
+      "bundleIdentifier": "com.zwj.liveiq",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFF9FC"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4996e742-8783-4fc1-9ce7-0a3cc3db7a10"
+      }
+    },
+    "owner": "ryanmkui"
   }
 }
