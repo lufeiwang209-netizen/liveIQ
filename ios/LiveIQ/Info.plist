@@ -27,7 +27,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.zwj.liveiq</string>
+				<string>com.zwj.liveiqfinal</string>
 			</array>
 		</dict>
 	</array>

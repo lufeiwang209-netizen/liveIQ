@@ -6,11 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/lu.png",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "buildNumber": "1",
       "supportsTablet": false,
-      "bundleIdentifier": "com.zwj.liveiq",
+      "bundleIdentifier": "com.zwj.liveiqfinal",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -20,11 +22,11 @@
         "backgroundColor": "#FFF9FC"
       }
     },
+    "owner": "ryanmkui",
     "extra": {
       "eas": {
-        "projectId": "4996e742-8783-4fc1-9ce7-0a3cc3db7a10"
+        "projectId": "6b8aeb3d-93bd-4464-b752-249637a5cb6d"
       }
-    },
-    "owner": "ryanmkui"
+    }
   }
 }
